@@ -1,3 +1,3 @@
 org/apache/drill/contrib/function/GeoIPFunctions.class
-org/apache/drill/contrib/function/GeoIPFunctions$GetCountryFunction.class
-org/apache/drill/contrib/function/GeoIPFunctions$GetCityFunction.class
+org/apache/drill/contrib/function/GeoIPFunctions$getCountryNameFunction.class
+org/apache/drill/contrib/function/GeoIPFunctions$getCityNameFunction.class

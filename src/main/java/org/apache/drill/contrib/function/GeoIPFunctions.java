@@ -24,6 +24,7 @@ import org.apache.drill.exec.expr.annotations.FunctionTemplate;
 import org.apache.drill.exec.expr.annotations.Output;
 import org.apache.drill.exec.expr.annotations.Param;
 import org.apache.drill.exec.expr.annotations.Workspace;
+import org.apache.drill.exec.expr.holders.NullableVarCharHolder;
 import org.apache.drill.exec.expr.holders.VarCharHolder;
 
 import javax.inject.Inject;
@@ -41,7 +42,7 @@ public class GeoIPFunctions {
     public static class getCountryNameFunction implements DrillSimpleFunc {
 
         @Param
-        VarCharHolder inputTextA;
+        NullableVarCharHolder inputTextA;
 
         @Output
         VarCharHolder out;
