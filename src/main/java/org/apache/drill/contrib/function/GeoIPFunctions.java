@@ -16,8 +16,7 @@ package org.apache.drill.contrib.function;
  * limitations under the License.
  */
 
-import com.maxmind.geoip2.model.CityResponse;
-import com.maxmind.geoip2.model.CountryResponse;
+
 import io.netty.buffer.DrillBuf;
 import org.apache.drill.exec.expr.DrillSimpleFunc;
 import org.apache.drill.exec.expr.annotations.FunctionTemplate;
@@ -28,8 +27,7 @@ import org.apache.drill.exec.expr.holders.NullableVarCharHolder;
 import org.apache.drill.exec.expr.holders.VarCharHolder;
 
 import javax.inject.Inject;
-import java.io.File;
-import java.io.IOException;
+
 
 public class GeoIPFunctions {
 
@@ -52,15 +50,13 @@ public class GeoIPFunctions {
 
         @Workspace
         com.maxmind.geoip2.DatabaseReader reader;
-        java.io.File database;
-
 
         public void setup() {
 
-            database = new File("/Users/cgivre/OneDrive/github/drillworkshop/GeoLite2/GeoIP2-City.mmdb");
+            java.io.File database = new java.io.File("/Users/cgivre/OneDrive/github/drillworkshop/GeoLite2/GeoLite2-Country.mmdb");
             try {
                 reader = new com.maxmind.geoip2.DatabaseReader.Builder(database).build();
-            } catch (IOException e) {
+            } catch (java.io.IOException e) {
                 System.out.print("IOException encountered:  Could not read MaxMind DB");
             }
         }
@@ -71,7 +67,7 @@ public class GeoIPFunctions {
             String countryName = "";
 
             try {
-                CountryResponse country = reader.country(java.net.InetAddress.getByName(ip));
+                com.maxmind.geoip2.model.CountryResponse country = reader.country(java.net.InetAddress.getByName(ip));
                 countryName = country.getCountry().getName();
             } catch (Exception e) {
                 countryName = "Unknown";
@@ -102,16 +98,14 @@ public class GeoIPFunctions {
 
         @Workspace
         com.maxmind.geoip2.DatabaseReader reader;
-        java.io.File database;
-
 
         public void setup() {
 
-            database = new File("/Users/cgivre/OneDrive/github/drillworkshop/GeoLite2/GeoIP2-City.mmdb");
+            java.io.File database = new java.io.File("/Users/cgivre/OneDrive/github/drillworkshop/GeoLite2/GeoLite2-City.mmdb");
 
             try {
                 reader = new com.maxmind.geoip2.DatabaseReader.Builder(database).build();
-            } catch (IOException e) {
+            } catch (java.io.IOException e) {
                 System.out.print("IOException encountered:  Could not read MaxMind DB");
             }
         }
@@ -121,7 +115,7 @@ public class GeoIPFunctions {
             String cityName = "";
 
             try {
-                CityResponse city = reader.city(java.net.InetAddress.getByName(ip));
+                com.maxmind.geoip2.model.CityResponse city = reader.city(java.net.InetAddress.getByName(ip));
                 cityName = city.getCity().getName();
             } catch (Exception e) {
                 cityName = "Unknown";
