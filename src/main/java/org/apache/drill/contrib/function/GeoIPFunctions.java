@@ -26,7 +26,6 @@ import org.apache.drill.exec.expr.annotations.Workspace;
 import org.apache.drill.exec.expr.holders.*;
 
 import javax.inject.Inject;
-import java.net.URL;
 
 
 public class GeoIPFunctions {
@@ -52,12 +51,9 @@ public class GeoIPFunctions {
         com.maxmind.geoip2.DatabaseReader reader;
 
         public void setup() {
-            final URL url = com.google.common.io.Resources.getResource("GeoLite2-Country.mmdb");
-            java.io.File database = new java.io.File( url.getFile() );
-            //java.io.InputStream db = getClass().getClassLoader().getResourceAsStream("GeoLite2-Country.mmdb");
-
+            java.io.InputStream db = getClass().getClassLoader().getResourceAsStream("GeoLite2-Country.mmdb");
             try {
-                reader = new com.maxmind.geoip2.DatabaseReader.Builder(database).withCache(new com.maxmind.db.CHMCache()).build();
+                reader = new com.maxmind.geoip2.DatabaseReader.Builder(db).withCache(new com.maxmind.db.CHMCache()).build();
             } catch (java.io.IOException e) {
                 System.out.print("IOException encountered:  Could not read MaxMind DB");
             }
@@ -457,10 +453,10 @@ public class GeoIPFunctions {
 
         public void setup() {
 
-            java.io.File database = new java.io.File("/Users/cgivre/OneDrive/github/drillworkshop/GeoLite2/GeoLite2-City.mmdb");
-            //java.io.InputStream db = getClass().getClassLoader().getResourceAsStream("GeoLite2-City.mmdb");
+            java.io.InputStream db = getClass().getClassLoader().getResourceAsStream("GeoLite2-City.mmdb");
+
             try {
-                reader = new com.maxmind.geoip2.DatabaseReader.Builder(database).withCache(new com.maxmind.db.CHMCache()).build();
+                reader = new com.maxmind.geoip2.DatabaseReader.Builder(db).withCache(new com.maxmind.db.CHMCache()).build();
             } catch (java.io.IOException e) {
                 System.out.print("IOException encountered:  Could not read MaxMind DB");
             }
