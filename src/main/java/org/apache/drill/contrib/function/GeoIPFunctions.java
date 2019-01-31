@@ -1,5 +1,4 @@
 package org.apache.drill.contrib.function;
-
 /*
  * Copyright 2001-2004 The Apache Software Foundation.
  *
@@ -556,6 +555,89 @@ public class GeoIPFunctions {
     }
   }
 
+  @FunctionTemplate(
+          name = "getPopulationDensity",
+          scope = FunctionTemplate.FunctionScope.SIMPLE,
+          nulls = FunctionTemplate.NullHandling.NULL_IF_NULL
+  )
+  public static class getPopulationDensityFunction implements DrillSimpleFunc {
+
+    @Param
+    VarCharHolder inputTextA;
+
+    @Output
+    IntHolder out;
+
+    @Workspace
+    com.maxmind.geoip2.DatabaseReader reader;
+
+    public void setup() {
+      java.io.InputStream db = getClass().getClassLoader().getResourceAsStream("GeoLite2-City.mmdb");
+      try {
+        reader = new com.maxmind.geoip2.DatabaseReader.Builder(db).withCache(new com.maxmind.db.CHMCache()).build();
+      } catch (java.io.IOException e) {
+        System.out.print("IOException encountered:  Could not read MaxMind DB");
+      }
+    }
+
+    public void eval() {
+      String ip = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.toStringFromUTF8(inputTextA.start, inputTextA.end, inputTextA.buffer);
+      int populationDensity = 0;
+
+      try {
+        com.maxmind.geoip2.model.CityResponse city = reader.city(java.net.InetAddress.getByName(ip));
+        com.maxmind.geoip2.record.Location location = city.getLocation();
+        populationDensity = location.getPopulationDensity();
+
+      } catch (Exception e) {
+        populationDensity = 0;
+      }
+      out.value = populationDensity;
+    }
+  }
+
+  @FunctionTemplate(
+          names = {"isEU", "isEuropeanUnion"},
+          scope = FunctionTemplate.FunctionScope.SIMPLE,
+          nulls = FunctionTemplate.NullHandling.NULL_IF_NULL
+  )
+  public static class isEUFunction implements DrillSimpleFunc {
+
+    @Param
+    VarCharHolder inputTextA;
+
+    @Output
+    BitHolder out;
+
+    @Workspace
+    com.maxmind.geoip2.DatabaseReader reader;
+
+    public void setup() {
+      java.io.InputStream db = getClass().getClassLoader().getResourceAsStream("GeoLite2-Country.mmdb");
+      try {
+        reader = new com.maxmind.geoip2.DatabaseReader.Builder(db).withCache(new com.maxmind.db.CHMCache()).build();
+      } catch (java.io.IOException e) {
+        System.out.print("IOException encountered:  Could not read MaxMind DB");
+      }
+    }
+
+    public void eval() {
+      String ip = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.toStringFromUTF8(inputTextA.start, inputTextA.end, inputTextA.buffer);
+      boolean isEU = false;
+
+      try {
+        com.maxmind.geoip2.model.CountryResponse country = reader.country(java.net.InetAddress.getByName(ip));
+        isEU = country.getCountry().isInEuropeanUnion();
+      } catch (Exception e) {
+        isEU = false;
+      }
+      if (isEU) {
+        out.value = 1;
+      } else {
+        out.value = 0;
+      }
+    }
+  }
 
   @FunctionTemplate(
           name = "getPostalCode",
@@ -753,6 +835,219 @@ public class GeoIPFunctions {
     }
   }
 
+  @FunctionTemplate(
+          name = "isAnonymous",
+          scope = FunctionTemplate.FunctionScope.SIMPLE,
+          nulls = FunctionTemplate.NullHandling.NULL_IF_NULL
+  )
+  public static class isAnonymousFunction implements DrillSimpleFunc {
 
+    @Param
+    VarCharHolder inputTextA;
+
+    @Output
+    BitHolder out;
+
+    @Workspace
+    com.maxmind.geoip2.DatabaseReader reader;
+
+    public void setup() {
+      java.io.InputStream db = getClass().getClassLoader().getResourceAsStream("GeoLite2-City.mmdb");
+      try {
+        reader = new com.maxmind.geoip2.DatabaseReader.Builder(db).withCache(new com.maxmind.db.CHMCache()).build();
+      } catch (java.io.IOException e) {
+        System.out.print("IOException encountered:  Could not read MaxMind DB");
+      }
+    }
+
+    public void eval() {
+      String ip = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.toStringFromUTF8(inputTextA.start, inputTextA.end, inputTextA.buffer);
+      boolean isAnonymous = false;
+
+      try {
+        com.maxmind.geoip2.model.AnonymousIpResponse response = reader.anonymousIp(java.net.InetAddress.getByName(ip));
+        isAnonymous = response.isAnonymous();
+      } catch (Exception e) {
+        isAnonymous = false;
+      }
+      if (isAnonymous) {
+        out.value = 1;
+      } else {
+        out.value = 0;
+      }
+    }
+  }
+
+  @FunctionTemplate(
+          name = "isAnonymousVPN",
+          scope = FunctionTemplate.FunctionScope.SIMPLE,
+          nulls = FunctionTemplate.NullHandling.NULL_IF_NULL
+  )
+  public static class isAnonymousVPNFunction implements DrillSimpleFunc {
+
+    @Param
+    VarCharHolder inputTextA;
+
+    @Output
+    BitHolder out;
+
+    @Workspace
+    com.maxmind.geoip2.DatabaseReader reader;
+
+    public void setup() {
+      java.io.InputStream db = getClass().getClassLoader().getResourceAsStream("GeoLite2-City.mmdb");
+      try {
+        reader = new com.maxmind.geoip2.DatabaseReader.Builder(db).withCache(new com.maxmind.db.CHMCache()).build();
+      } catch (java.io.IOException e) {
+        System.out.print("IOException encountered:  Could not read MaxMind DB");
+      }
+    }
+
+    public void eval() {
+      String ip = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.toStringFromUTF8(inputTextA.start, inputTextA.end, inputTextA.buffer);
+      boolean isAnonymousVPN = false;
+
+      try {
+        com.maxmind.geoip2.model.AnonymousIpResponse response = reader.anonymousIp(java.net.InetAddress.getByName(ip));
+        isAnonymousVPN = response.isAnonymousVpn();
+      } catch (Exception e) {
+        isAnonymousVPN = false;
+      }
+      if (isAnonymousVPN) {
+        out.value = 1;
+      } else {
+        out.value = 0;
+      }
+    }
+  }
+
+  @FunctionTemplate(
+          name = "isHostingProvider",
+          scope = FunctionTemplate.FunctionScope.SIMPLE,
+          nulls = FunctionTemplate.NullHandling.NULL_IF_NULL
+  )
+  public static class isHostingProviderFunction implements DrillSimpleFunc {
+
+    @Param
+    VarCharHolder inputTextA;
+
+    @Output
+    BitHolder out;
+
+    @Workspace
+    com.maxmind.geoip2.DatabaseReader reader;
+
+    public void setup() {
+      java.io.InputStream db = getClass().getClassLoader().getResourceAsStream("GeoLite2-City.mmdb");
+      try {
+        reader = new com.maxmind.geoip2.DatabaseReader.Builder(db).withCache(new com.maxmind.db.CHMCache()).build();
+      } catch (java.io.IOException e) {
+        System.out.print("IOException encountered:  Could not read MaxMind DB");
+      }
+    }
+
+    public void eval() {
+      String ip = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.toStringFromUTF8(inputTextA.start, inputTextA.end, inputTextA.buffer);
+      boolean isHostingProvider = false;
+
+      try {
+        com.maxmind.geoip2.model.AnonymousIpResponse response = reader.anonymousIp(java.net.InetAddress.getByName(ip));
+        isHostingProvider = response.isHostingProvider();
+      } catch (Exception e) {
+        isHostingProvider = false;
+      }
+      if (isHostingProvider) {
+        out.value = 1;
+      } else {
+        out.value = 0;
+      }
+    }
+  }
+
+  @FunctionTemplate(
+          name = "isPublicProxy",
+          scope = FunctionTemplate.FunctionScope.SIMPLE,
+          nulls = FunctionTemplate.NullHandling.NULL_IF_NULL
+  )
+  public static class isPublicProxyFunction implements DrillSimpleFunc {
+
+    @Param
+    VarCharHolder inputTextA;
+
+    @Output
+    BitHolder out;
+
+    @Workspace
+    com.maxmind.geoip2.DatabaseReader reader;
+
+    public void setup() {
+      java.io.InputStream db = getClass().getClassLoader().getResourceAsStream("GeoLite2-City.mmdb");
+      try {
+        reader = new com.maxmind.geoip2.DatabaseReader.Builder(db).withCache(new com.maxmind.db.CHMCache()).build();
+      } catch (java.io.IOException e) {
+        System.out.print("IOException encountered:  Could not read MaxMind DB");
+      }
+    }
+
+    public void eval() {
+      String ip = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.toStringFromUTF8(inputTextA.start, inputTextA.end, inputTextA.buffer);
+      boolean isPublicProxy = false;
+
+      try {
+        com.maxmind.geoip2.model.AnonymousIpResponse response = reader.anonymousIp(java.net.InetAddress.getByName(ip));
+        isPublicProxy = response.isPublicProxy();
+      } catch (Exception e) {
+        isPublicProxy = false;
+      }
+      if (isPublicProxy) {
+        out.value = 1;
+      } else {
+        out.value = 0;
+      }
+    }
+  }
+
+  @FunctionTemplate(
+          name = "isTORExitNode",
+          scope = FunctionTemplate.FunctionScope.SIMPLE,
+          nulls = FunctionTemplate.NullHandling.NULL_IF_NULL
+  )
+  public static class isTORFunction implements DrillSimpleFunc {
+
+    @Param
+    VarCharHolder inputTextA;
+
+    @Output
+    BitHolder out;
+
+    @Workspace
+    com.maxmind.geoip2.DatabaseReader reader;
+
+    public void setup() {
+      java.io.InputStream db = getClass().getClassLoader().getResourceAsStream("GeoLite2-City.mmdb");
+      try {
+        reader = new com.maxmind.geoip2.DatabaseReader.Builder(db).withCache(new com.maxmind.db.CHMCache()).build();
+      } catch (java.io.IOException e) {
+        System.out.print("IOException encountered:  Could not read MaxMind DB");
+      }
+    }
+
+    public void eval() {
+      String ip = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.toStringFromUTF8(inputTextA.start, inputTextA.end, inputTextA.buffer);
+      boolean isTOR = false;
+
+      try {
+        com.maxmind.geoip2.model.AnonymousIpResponse response = reader.anonymousIp(java.net.InetAddress.getByName(ip));
+        isTOR = response.isTorExitNode();
+      } catch (Exception e) {
+        isTOR = false;
+      }
+      if (isTOR) {
+        out.value = 1;
+      } else {
+        out.value = 0;
+      }
+    }
+  }
 }
 

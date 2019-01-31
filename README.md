@@ -14,9 +14,16 @@ IP Geo-Location is inherently imprecise and should never be relied on to get any
 * **`getAccuracyRadius( <ip> )`**:  This function returns the accuracy radius associated with the IP address, 0 if unknown.
 * **`getAverageIncome( <ip> )`**:  This function returns the average income of the region associated with the IP address, 0 if unknown.
 * **`getMetroCode( <ip> )`**:  This function returns the metro code of the region associated with the IP address, 0 if unknown.
+* **`getPopulationDensity( <ip> )`**:  This function returns the population density associated with the IP address.
 * **`getPostalCode( <ip> )`**:  This function returns the postal code associated with the IP address.
 * **`getCoordPoint( <ip> )`**:  This function returns a point for use in GIS functions of the lat/long of associated with the IP address.
 * **`getASN( <ip> )`**:  This function returns the autonomous system of the IP address, "Unknown" if the IP is unknown or invalid.
 * **`getASNOrganization( <ip> )`**:  This function returns the autonomous system organization of the IP address, "Unknown" if the IP is unknown or invalid.
+* **`isEU( <ip> ), isEuropeanUnion( <ip> )`**:  This function returns `true` if the ip address is located in the European Union, `false` if not.
+* **`isAnonymous( <ip> )`**:  This function returns `true` if the ip address is anonymous, `false` if not.
+* **`isAnonymousVPN( <ip> )`**:  This function returns `true` if the ip address is an anonymous virtual private network (VPN), `false` if not.
+* **`isHostingProvider( <ip> )`**:  This function returns `true` if the ip address is a hosting provider, `false` if not.
+* **`isPublciProxy( <ip> )`**:  This function returns `true` if the ip address is a public proxy, `false` if not.
+* **`isTORExitNode( <ip> )`**:  This function returns `true` if the ip address is a known TOR exit node, `false` if not.
 
 This product includes GeoLite2 data created by MaxMind, available from <a href="https://www.maxmind.com">https://www.maxmind.com</a>.
