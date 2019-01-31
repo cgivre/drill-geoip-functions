@@ -39,10 +39,10 @@ public class GeoIPFunctions {
   public static class getCountryNameFunction implements DrillSimpleFunc {
 
     @Param
-    NullableVarCharHolder inputTextA;
+    VarCharHolder inputTextA;
 
     @Output
-    NullableVarCharHolder out;
+    VarCharHolder out;
 
     @Inject
     DrillBuf buffer;
@@ -59,20 +59,18 @@ public class GeoIPFunctions {
       }
     }
 
-
     public void eval() {
       String ip = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.toStringFromUTF8(inputTextA.start, inputTextA.end, inputTextA.buffer);
       String countryName = "Unknown";
 
       try {
-        java.net.InetAddress addr = java.net.InetAddress.getByName(ip);
-        com.maxmind.geoip2.model.CountryResponse country = reader.country(addr);
-        com.maxmind.geoip2.record.Country c = country.getCountry();
-        countryName = c.getName();
+        com.maxmind.geoip2.model.CountryResponse country = reader.country(java.net.InetAddress.getByName(ip));
+        System.out.println("The country object is: " + country);
+
+        countryName = country.getCountry().getName();
         if (countryName == null) {
           countryName = "Unknown";
         }
-
       } catch (Exception e) {
         countryName = "Unknown";
       }
@@ -84,6 +82,7 @@ public class GeoIPFunctions {
     }
   }
 
+
   @FunctionTemplate(
           name = "getCountryISOCode",
           scope = FunctionTemplate.FunctionScope.SIMPLE,
@@ -92,7 +91,7 @@ public class GeoIPFunctions {
   public static class getCountryISOFunction implements DrillSimpleFunc {
 
     @Param
-    NullableVarCharHolder inputTextA;
+    VarCharHolder inputTextA;
 
     @Output
     VarCharHolder out;
@@ -112,7 +111,6 @@ public class GeoIPFunctions {
         System.out.print("IOException encountered:  Could not read MaxMind DB");
       }
     }
-
 
     public void eval() {
       String ip = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.toStringFromUTF8(inputTextA.start, inputTextA.end, inputTextA.buffer);
@@ -176,7 +174,6 @@ public class GeoIPFunctions {
       } catch (Exception e) {
         confidence = 0;
       }
-
       out.value = confidence;
     }
   }
@@ -286,7 +283,7 @@ public class GeoIPFunctions {
   public static class getLatitudeFunction implements DrillSimpleFunc {
 
     @Param
-    NullableVarCharHolder inputTextA;
+    VarCharHolder inputTextA;
 
     @Output
     Float8Holder out;
@@ -333,13 +330,10 @@ public class GeoIPFunctions {
   public static class getLongitudeFunction implements DrillSimpleFunc {
 
     @Param
-    NullableVarCharHolder inputTextA;
+    VarCharHolder inputTextA;
 
     @Output
     Float8Holder out;
-
-    @Inject
-    DrillBuf buffer;
 
     @Workspace
     com.maxmind.geoip2.DatabaseReader reader;
@@ -348,10 +342,9 @@ public class GeoIPFunctions {
     java.io.File database;
 
     public void setup() {
-
-      database = new java.io.File("/Users/cgivre/OneDrive/github/drillworkshop/GeoLite2/GeoLite2-City.mmdb");
+      java.io.InputStream db = getClass().getClassLoader().getResourceAsStream("GeoLite2-City.mmdb");
       try {
-        reader = new com.maxmind.geoip2.DatabaseReader.Builder(database).withCache(new com.maxmind.db.CHMCache()).build();
+        reader = new com.maxmind.geoip2.DatabaseReader.Builder(db).withCache(new com.maxmind.db.CHMCache()).build();
       } catch (java.io.IOException e) {
         System.out.print("IOException encountered:  Could not read MaxMind DB");
       }
@@ -376,6 +369,193 @@ public class GeoIPFunctions {
     }
   }
 
+  @FunctionTemplate(
+          name = "getTimezone",
+          scope = FunctionTemplate.FunctionScope.SIMPLE,
+          nulls = FunctionTemplate.NullHandling.NULL_IF_NULL
+  )
+  public static class getTimezoneFunction implements DrillSimpleFunc {
+
+    @Param
+    VarCharHolder inputTextA;
+
+    @Output
+    VarCharHolder out;
+
+    @Inject
+    DrillBuf buffer;
+
+    @Workspace
+    com.maxmind.geoip2.DatabaseReader reader;
+
+    @Workspace
+    java.io.File database;
+
+    public void setup() {
+      java.io.InputStream db = getClass().getClassLoader().getResourceAsStream("GeoLite2-City.mmdb");
+      try {
+        reader = new com.maxmind.geoip2.DatabaseReader.Builder(db).withCache(new com.maxmind.db.CHMCache()).build();
+      } catch (java.io.IOException e) {
+        System.out.print("IOException encountered:  Could not read MaxMind DB");
+      }
+    }
+
+    public void eval() {
+      String ip = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.toStringFromUTF8(inputTextA.start, inputTextA.end, inputTextA.buffer);
+      String timezone = "Unknown";
+
+      try {
+        com.maxmind.geoip2.model.CityResponse city = reader.city(java.net.InetAddress.getByName(ip));
+        com.maxmind.geoip2.record.Location location = city.getLocation();
+        timezone = location.getTimeZone();
+
+      } catch (Exception e) {
+        timezone = "Unknown";
+      }
+
+      out.buffer = buffer;
+      out.start = 0;
+      out.end = timezone.getBytes().length;
+      buffer.setBytes(0, timezone.getBytes());
+
+    }
+  }
+
+  @FunctionTemplate(
+          name = "getAccuracyRadius",
+          scope = FunctionTemplate.FunctionScope.SIMPLE,
+          nulls = FunctionTemplate.NullHandling.NULL_IF_NULL
+  )
+  public static class getAccuracyRadiusFunction implements DrillSimpleFunc {
+
+    @Param
+    VarCharHolder inputTextA;
+
+    @Output
+    IntHolder out;
+
+    @Inject
+    DrillBuf buffer;
+
+    @Workspace
+    com.maxmind.geoip2.DatabaseReader reader;
+
+    @Workspace
+    java.io.File database;
+
+    public void setup() {
+      java.io.InputStream db = getClass().getClassLoader().getResourceAsStream("GeoLite2-City.mmdb");
+      try {
+        reader = new com.maxmind.geoip2.DatabaseReader.Builder(db).withCache(new com.maxmind.db.CHMCache()).build();
+      } catch (java.io.IOException e) {
+        System.out.print("IOException encountered:  Could not read MaxMind DB");
+      }
+    }
+
+    public void eval() {
+      String ip = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.toStringFromUTF8(inputTextA.start, inputTextA.end, inputTextA.buffer);
+      int accuracyRadius = 0;
+
+      try {
+        com.maxmind.geoip2.model.CityResponse city = reader.city(java.net.InetAddress.getByName(ip));
+        com.maxmind.geoip2.record.Location location = city.getLocation();
+        accuracyRadius = location.getAccuracyRadius();
+
+      } catch (Exception e) {
+        accuracyRadius = 0;
+      }
+      out.value = accuracyRadius;
+    }
+  }
+
+  @FunctionTemplate(
+          name = "getAverageIncome",
+          scope = FunctionTemplate.FunctionScope.SIMPLE,
+          nulls = FunctionTemplate.NullHandling.NULL_IF_NULL
+  )
+  public static class getAverageIncomeFunction implements DrillSimpleFunc {
+
+    @Param
+    VarCharHolder inputTextA;
+
+    @Output
+    IntHolder out;
+
+    @Workspace
+    com.maxmind.geoip2.DatabaseReader reader;
+
+    @Workspace
+    java.io.File database;
+
+    public void setup() {
+      java.io.InputStream db = getClass().getClassLoader().getResourceAsStream("GeoLite2-City.mmdb");
+      try {
+        reader = new com.maxmind.geoip2.DatabaseReader.Builder(db).withCache(new com.maxmind.db.CHMCache()).build();
+      } catch (java.io.IOException e) {
+        System.out.print("IOException encountered:  Could not read MaxMind DB");
+      }
+    }
+
+    public void eval() {
+      String ip = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.toStringFromUTF8(inputTextA.start, inputTextA.end, inputTextA.buffer);
+      int averageIncome = 0;
+
+      try {
+        com.maxmind.geoip2.model.CityResponse city = reader.city(java.net.InetAddress.getByName(ip));
+        com.maxmind.geoip2.record.Location location = city.getLocation();
+        averageIncome = location.getAverageIncome();
+
+      } catch (Exception e) {
+        averageIncome = 0;
+      }
+      out.value = averageIncome;
+    }
+  }
+
+  @FunctionTemplate(
+          name = "getMetroCode",
+          scope = FunctionTemplate.FunctionScope.SIMPLE,
+          nulls = FunctionTemplate.NullHandling.NULL_IF_NULL
+  )
+  public static class getMetroCodeFunction implements DrillSimpleFunc {
+
+    @Param
+    VarCharHolder inputTextA;
+
+    @Output
+    IntHolder out;
+
+    @Workspace
+    com.maxmind.geoip2.DatabaseReader reader;
+
+    @Workspace
+    java.io.File database;
+
+    public void setup() {
+      java.io.InputStream db = getClass().getClassLoader().getResourceAsStream("GeoLite2-City.mmdb");
+      try {
+        reader = new com.maxmind.geoip2.DatabaseReader.Builder(db).withCache(new com.maxmind.db.CHMCache()).build();
+      } catch (java.io.IOException e) {
+        System.out.print("IOException encountered:  Could not read MaxMind DB");
+      }
+    }
+
+    public void eval() {
+      String ip = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.toStringFromUTF8(inputTextA.start, inputTextA.end, inputTextA.buffer);
+      int metroCode = 0;
+
+      try {
+        com.maxmind.geoip2.model.CityResponse city = reader.city(java.net.InetAddress.getByName(ip));
+        com.maxmind.geoip2.record.Location location = city.getLocation();
+        metroCode = location.getMetroCode();
+
+      } catch (Exception e) {
+        metroCode = 0;
+      }
+      out.value = metroCode;
+    }
+  }
+
 
   @FunctionTemplate(
           name = "getPostalCode",
@@ -385,10 +565,10 @@ public class GeoIPFunctions {
   public static class getPostalCodeFunction implements DrillSimpleFunc {
 
     @Param
-    NullableVarCharHolder inputTextA;
+    VarCharHolder inputTextA;
 
     @Output
-    NullableVarCharHolder out;
+    VarCharHolder out;
 
     @Inject
     DrillBuf buffer;
@@ -452,7 +632,6 @@ public class GeoIPFunctions {
 
 
     public void setup() {
-
       java.io.InputStream db = getClass().getClassLoader().getResourceAsStream("GeoLite2-City.mmdb");
 
       try {
@@ -489,6 +668,91 @@ public class GeoIPFunctions {
 
     }
   }
+
+  @FunctionTemplate(
+          name = "getASN",
+          scope = FunctionTemplate.FunctionScope.SIMPLE,
+          nulls = FunctionTemplate.NullHandling.NULL_IF_NULL
+  )
+  public static class getASNFunction implements DrillSimpleFunc {
+
+    @Param
+    NullableVarCharHolder inputTextA;
+
+    @Output
+    IntHolder out;
+
+    @Workspace
+    com.maxmind.geoip2.DatabaseReader reader;
+
+    public void setup() {
+      java.io.InputStream db = getClass().getClassLoader().getResourceAsStream("GeoLite2-ASN.mmdb");
+
+      try {
+        reader = new com.maxmind.geoip2.DatabaseReader.Builder(db).withCache(new com.maxmind.db.CHMCache()).build();
+      } catch (java.io.IOException e) {
+        System.out.print("IOException encountered:  Could not read MaxMind DB");
+      }
+    }
+
+    public void eval() {
+      String ip = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.toStringFromUTF8(inputTextA.start, inputTextA.end, inputTextA.buffer);
+      int ASN = 0;
+
+      try {
+        ASN = reader.asn(java.net.InetAddress.getByName(ip)).getAutonomousSystemNumber();
+      } catch (Exception e) {
+        ASN = 0;
+      }
+      out.value = ASN;
+    }
+  }
+
+  @FunctionTemplate(
+          name = "getASNOrganization",
+          scope = FunctionTemplate.FunctionScope.SIMPLE,
+          nulls = FunctionTemplate.NullHandling.NULL_IF_NULL
+  )
+  public static class getASNOrgFunction implements DrillSimpleFunc {
+
+    @Param
+    VarCharHolder inputTextA;
+
+    @Output
+    VarCharHolder out;
+
+    @Inject
+    DrillBuf buffer;
+
+    @Workspace
+    com.maxmind.geoip2.DatabaseReader reader;
+
+    public void setup() {
+      java.io.InputStream db = getClass().getClassLoader().getResourceAsStream("GeoLite2-ASN.mmdb");
+
+      try {
+        reader = new com.maxmind.geoip2.DatabaseReader.Builder(db).withCache(new com.maxmind.db.CHMCache()).build();
+      } catch (java.io.IOException e) {
+        System.out.print("IOException encountered:  Could not read MaxMind DB");
+      }
+    }
+
+    public void eval() {
+      String ip = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.toStringFromUTF8(inputTextA.start, inputTextA.end, inputTextA.buffer);
+      String ASNorg = "Unknown";
+
+      try {
+        ASNorg = reader.asn(java.net.InetAddress.getByName(ip)).getAutonomousSystemOrganization();
+      } catch (Exception e) {
+        ASNorg = "Unknown";
+      }
+      out.buffer = buffer;
+      out.start = 0;
+      out.end = ASNorg.getBytes().length;
+      buffer.setBytes(0, ASNorg.getBytes());
+    }
+  }
+
 
 }
 
