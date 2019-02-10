@@ -64,7 +64,6 @@ public class GeoIPFunctions {
 
       try {
         com.maxmind.geoip2.model.CountryResponse country = reader.country(java.net.InetAddress.getByName(ip));
-        System.out.println("The country object is: " + country);
 
         countryName = country.getCountry().getName();
         if (countryName == null) {
