@@ -62,7 +62,7 @@ public class SecurityHelperFunctions {
 
     String line = "";
     String key = "";
-    String linePattern = "^\\w*,\\d+,";
+    String linePattern = "^[a-zA-Z0-9_-]*,\\d+,";
     try {
       java.io.BufferedReader br = new java.io.BufferedReader(new java.io.InputStreamReader(serviceFile));
       while ((line = br.readLine()) != null) {
