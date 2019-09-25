@@ -27,3 +27,30 @@ IP Geo-Location is inherently imprecise and should never be relied on to get any
 * **`isTORExitNode( <ip> )`**:  This function returns `true` if the ip address is a known TOR exit node, `false` if not.
 
 This product includes GeoLite2 data created by MaxMind, available from <a href="https://www.maxmind.com">https://www.maxmind.com</a>.
+
+
+## Protocol Lookup Functions
+These functions provide a convenience lookup capability for port numbers. They will accept port numbers as either an int or string.
+
+* `get_service_name(<port number>, <protocol>)`:  This function returns the service name for a port and protocol combination.  
+```
+apache drill> select get_service_name(666, 'tcp') as service from (values(1));
++------------------+
+|     service      |
++------------------+
+| doom Id Software |
++------------------+
+1 row selected (0.178 seconds)
+```
+
+* `get_short_service_name(<port number>, <protocol>)`: Same as above but returns a short protocol name. 
+
+```
+apache drill> select get_short_service_name(21, 'tcp') as service from (values(1));
+   +---------+
+   | service |
+   +---------+
+   | ftp     |
+   +---------+
+   1 row selected (0.112 seconds)
+   ```
